@@ -16,5 +16,33 @@ export interface Config {
   BSC: {
     NODE_URL: string;
     WBNB_ADDRESS: string;
+    PANCAKE_V2_ROUTE: string;
   };
+}
+
+export interface NextNotification {
+  jsonrpc: string;
+  id: null;
+  method: string;
+  params?: Params;
+}
+
+export interface Params {
+  subscription: string;
+  result: Result;
+}
+
+export interface Result {
+  txHash: string;
+  txContents: TxContents;
+}
+
+export interface TxContents {
+  from: string;
+  to: string;
+  value: string;
+  gasPrice: string;
+  gas: string;
+  input: string;
+  nonce: string;
 }
