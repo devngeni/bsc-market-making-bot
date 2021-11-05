@@ -25,7 +25,6 @@ class MemoPoolWrapper {
 
   connect(url: string) {
     return new Promise((resolve, reject) => {
-      console.log("REACHED");
       try {
         this._ws = new WebSocket(url, {
           cert: readFileSync(
@@ -38,7 +37,6 @@ class MemoPoolWrapper {
         });
         // call on connection opened
         this.onConnectionOpen(this._ws);
-
         // on message get stream data
         resolve(this.getStreamDataOnMessage(this._ws));
       } catch (error: any) {
@@ -67,7 +65,7 @@ class MemoPoolWrapper {
   }
 
   //  Process Streaming Data
-  processStreamedData(result: Result) {
+  async processStreamedData(result: Result) {
     const toRouterAddress = result.txContents.to;
     const gasPrice = parseInt(result.txContents.gasPrice, 16); // Gas price
     let gas = parseInt(result.txContents.gas, 16); // gas fees
@@ -79,13 +77,16 @@ class MemoPoolWrapper {
       data: result.txContents.input,
     });
 
-    console.log(decodedTransaction.args);
+    // console.log(decodedTransaction.args);
     // token under trade
     const token = decodedTransaction.args[1][1];
 
     // CHECK if the ROUTER Version is used
 
     if (toRouterAddress === config.BSC.PANCAKE_V2_ROUTE) {
+      const impact = await priceImpact.getPriceImpact(token, value);
+
+      console.table(impact);
     }
   }
 
