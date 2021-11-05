@@ -1,0 +1,27 @@
+{
+  "name": "market-making-bot",
+  "version": "1.0.0",
+  "description": "The bot will be making a market for specific token or token list",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "ts-node-dev src/index.ts",
+    "start": "node dist/src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/devNgeni/bsc-market-making-bot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/devNgeni/bsc-market-making-bot/issues"
+  },
+  "homepage": "https://github.com/devNgeni/bsc-market-making-bot#readme",
+  "dependencies": {
+    "@pancakeswap-libs/sdk-v2": "^2.2.0",
+    "mongoose": "^6.0.12",
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.4.4"
+  }
+}
