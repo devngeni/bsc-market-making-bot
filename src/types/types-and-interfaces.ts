@@ -13,4 +13,8 @@ export interface Config {
   BLOXROUTE: {
     ENDPOINT: string;
   };
+  BSC: {
+    NODE_URL: string;
+    WBNB_ADDRESS: string;
+  };
 }
