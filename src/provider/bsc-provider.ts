@@ -1,4 +1,5 @@
-import { providers } from "ethers";
+import { readFileSync } from "fs";
+import { ethers, providers } from "ethers";
 import { config } from "./../config";
 import { ChainId, WETH } from "@pancakeswap-libs/sdk-v2";
 
@@ -19,6 +20,7 @@ class Provider {
   /**
    * Network JsonRPCProvider
    */
+
   get provider() {
     if (!this._provider) {
       throw Error(

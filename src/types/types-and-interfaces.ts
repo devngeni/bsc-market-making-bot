@@ -8,7 +8,7 @@
  */
 export interface Config {
   WALLETS: Array<{ PRIVATE_KEY: string; ADDRESS: string }>;
-  PRICEIMPACT: { SELLING: number; BUYING: number };
+  PRICEIMPACT: [{ SELLING: number; BUYING: number }];
   EXECUTION_TIME: Array<number>;
   BLOXROUTE: {
     ENDPOINT: string;
@@ -16,5 +16,38 @@ export interface Config {
   BSC: {
     NODE_URL: string;
     WBNB_ADDRESS: string;
+    PANCAKE_V2_ROUTE: string;
   };
+  TOKENS_TO_MONITOR: Array<string>;
+  EXECUATION_AMOUNT: Array<number>;
+  DB: {
+    MONGO_URL: string;
+  };
+}
+
+export interface NextNotification {
+  jsonrpc: string;
+  id: null;
+  method: string;
+  params?: Params;
+}
+
+export interface Params {
+  subscription: string;
+  result: Result;
+}
+
+export interface Result {
+  txHash: string;
+  txContents: TxContents;
+}
+
+export interface TxContents {
+  from: string;
+  to: string;
+  value: string;
+  gasPrice: string;
+  gas: string;
+  input: string;
+  nonce: string;
 }
