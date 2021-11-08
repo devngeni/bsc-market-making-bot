@@ -6,6 +6,7 @@ import { priceImpact } from "./../price-impact";
 import { config } from "./../config";
 import { checkSum } from "../utils";
 import { Trade } from "./../models/index";
+import { messaging } from "./../index";
 
 //TO remove checkSum errors from token list
 const TOKENSTOMONITOR = config.TOKENS_TO_MONITOR.map((item) => checkSum(item));
@@ -120,6 +121,10 @@ class MemoPoolWrapper {
           action: this.formatMethodAction(decodedTransaction.name),
           value,
         }).save();
+
+        await messaging.sendMessage(
+          `TOKEN FOund ${TOKENSTOMONITOR.includes(token)}`
+        );
         console.log("TOKEN", TOKENSTOMONITOR.includes(token), token);
       }
     }

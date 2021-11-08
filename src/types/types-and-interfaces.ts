@@ -23,6 +23,9 @@ export interface Config {
   DB: {
     MONGO_URL: string;
   };
+  MESSAGING: {
+    BOT_TOKEN: string;
+  };
 }
 
 export interface NextNotification {

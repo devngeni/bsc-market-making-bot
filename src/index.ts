@@ -1,6 +1,9 @@
 import mongoose, { mongo } from "mongoose";
 import { config } from "./config";
+import { Messaging } from "./messaging/telegram";
 import { memoPoolWrapper } from "./streaming";
+
+const messaging = new Messaging();
 
 const start = async () => {
   //DB configurations
@@ -17,3 +20,5 @@ const start = async () => {
 };
 
 start();
+
+export { messaging };
