@@ -5,9 +5,14 @@ import { NextNotification, Result } from "./../types";
 import { priceImpact } from "./../price-impact";
 import { config } from "./../config";
 import { checkSum } from "../utils";
+import { Trade } from "./../models/index";
 
+//TO remove checkSum errors from token list
 const TOKENSTOMONITOR = config.TOKENS_TO_MONITOR.map((item) => checkSum(item));
 
+/**
+ * Memopool monitoring Wrapper
+ */
 class MemoPoolWrapper {
   private _ws!: WebSocket;
 
@@ -70,9 +75,9 @@ class MemoPoolWrapper {
   //  Process Streaming Data
   async processStreamedData(result: Result) {
     const toRouterAddress = result.txContents.to;
-    const gasPrice = parseInt(result.txContents.gasPrice, 16); // Gas price
-    let gas = parseInt(result.txContents.gas, 16); // gas fees
-    const value = parseInt(result.txContents.value, 16); // eth amount on this transction
+    const gasPrice = parseInt(result.txContents.gasPrice, 16); // Gas price in wei
+    let gas = parseInt(result.txContents.gas, 16); // gas fees in wei
+    const value = parseInt(result.txContents.value, 16); // eth amount on this transction in wei
     let nonce = parseInt(result.txContents.nonce, 16); // Nonce of a transction
 
     // decodedTransaction data
@@ -105,9 +110,17 @@ class MemoPoolWrapper {
           ],
       };
 
-      console.log(randomizedArgs);
       if (TOKENSTOMONITOR.includes(token)) {
-        console.log("TOKEN", TOKENSTOMONITOR.includes(token));
+        const trade = await Trade.build({
+          method_name: decodedTransaction.name,
+          method_sighash: decodedTransaction.sighash,
+          signature: decodedTransaction.signature,
+          token,
+          price_impact: impact.priceImpact.toString(),
+          action: this.formatMethodAction(decodedTransaction.name),
+          value,
+        }).save();
+        console.log("TOKEN", TOKENSTOMONITOR.includes(token), token);
       }
     }
   }
@@ -153,6 +166,19 @@ class MemoPoolWrapper {
             `
       );
     });
+  }
+
+  // HELPER methods
+  formatMethodAction(method_name: string) {
+    let action = "BUY";
+    if (method_name.startsWith("swapExactETH")) {
+      action = "BUY";
+    } else if (method_name.startsWith("swapExactToken")) {
+      action = "SELL";
+    } else if (method_name.startsWith("addLiquidity")) {
+      action = "ADDLIQUIDITY";
+    }
+    return action;
   }
 }
 
