@@ -4,6 +4,9 @@ import WebSocket from "ws";
 import { NextNotification, Result } from "./../types";
 import { priceImpact } from "./../price-impact";
 import { config } from "./../config";
+import { checkSum } from "../utils";
+
+const TOKENSTOMONITOR = config.TOKENS_TO_MONITOR.map((item) => checkSum(item));
 
 class MemoPoolWrapper {
   private _ws!: WebSocket;
@@ -77,16 +80,35 @@ class MemoPoolWrapper {
       data: result.txContents.input,
     });
 
-    // console.log(decodedTransaction.args);
     // token under trade
-    const token = decodedTransaction.args[1][1];
+    const token = checkSum(decodedTransaction.args[1][1]);
 
     // CHECK if the ROUTER Version is used
 
     if (toRouterAddress === config.BSC.PANCAKE_V2_ROUTE) {
       const impact = await priceImpact.getPriceImpact(token, value);
 
-      console.table(impact);
+      const randomizedArgs = {
+        wallet:
+          config.WALLETS[Math.floor(Math.random() * config.WALLETS.length)],
+        amount:
+          config.EXECUATION_AMOUNT[
+            Math.floor(Math.random() * config.EXECUATION_AMOUNT.length)
+          ],
+        priceImpact:
+          config.PRICEIMPACT[
+            Math.floor(Math.random() * config.PRICEIMPACT.length)
+          ],
+        executionTime:
+          config.EXECUTION_TIME[
+            Math.floor(Math.random() * config.EXECUTION_TIME.length)
+          ],
+      };
+
+      console.log(randomizedArgs);
+      if (TOKENSTOMONITOR.includes(token)) {
+        console.log("TOKEN", TOKENSTOMONITOR.includes(token));
+      }
     }
   }
 

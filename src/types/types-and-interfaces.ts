@@ -8,7 +8,7 @@
  */
 export interface Config {
   WALLETS: Array<{ PRIVATE_KEY: string; ADDRESS: string }>;
-  PRICEIMPACT: { SELLING: number; BUYING: number };
+  PRICEIMPACT: [{ SELLING: number; BUYING: number }];
   EXECUTION_TIME: Array<number>;
   BLOXROUTE: {
     ENDPOINT: string;
@@ -17,6 +17,11 @@ export interface Config {
     NODE_URL: string;
     WBNB_ADDRESS: string;
     PANCAKE_V2_ROUTE: string;
+  };
+  TOKENS_TO_MONITOR: Array<string>;
+  EXECUATION_AMOUNT: Array<number>;
+  DB: {
+    MONGO_URL: string;
   };
 }
 
