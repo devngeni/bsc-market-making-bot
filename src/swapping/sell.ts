@@ -1,5 +1,5 @@
 import { CurrencyAmount } from "@pancakeswap-libs/sdk-v2";
-import { ethers } from "ethers";
+import { ethers, utils } from "ethers";
 import { bscProvider } from "../provider";
 import { toHex } from "../utils";
 import { config } from "./../config";
@@ -9,9 +9,7 @@ export const swapExactTokensForTokens = async (
   amountIn: any,
   amountOutMin: number,
   path: Array<string>,
-  gasPrice: number,
-  gasLimit: number,
-  nonce: number
+  gasLimit: string
 ) => {
   try {
     console.log(
@@ -32,13 +30,19 @@ export const swapExactTokensForTokens = async (
       account
     );
     // Convert amount toHex
-    let value = toHex(amountOutMin as unknown as CurrencyAmount);
+    let value = utils.hexlify(amountOutMin);
 
-    let calcAmountIn = ethers.utils.parseUnits(amountIn, "ether");
+    let calcAmountIn = ethers.utils.parseUnits(amountIn, "ether"); // wei
     const deadline = Math.floor(Date.now() / 1000 + 60 * 2);
 
+    // get transctions nounce / count
+    const nonce = await bscProvider.provider.getTransactionCount(
+      wallet.ADDRESS,
+      "pending"
+    );
+
     console.log(
-      `\n\n amountOut: ${calcAmountIn}, \n Value: ${value} \nto: ${wallet.ADDRESS}, \npath: ${path}, \ngasprice: ${gasPrice}, \ngasLimit: ${gasLimit}, \n deadline: ${deadline},`
+      `\n\n amountOut: ${calcAmountIn}, \n Value: ${value} \nto: ${wallet.ADDRESS}, \npath: ${path}, \ngasLimit: ${gasLimit}, \n deadline: ${deadline},`
     );
     const tx = await swapContract.swapExactTokensForTokens(
       toHex(calcAmountIn as unknown as CurrencyAmount),
@@ -48,7 +52,6 @@ export const swapExactTokensForTokens = async (
       deadline,
       {
         nonce: nonce,
-        gasPrice: gasPrice,
         gasLimit: gasLimit,
       }
     );

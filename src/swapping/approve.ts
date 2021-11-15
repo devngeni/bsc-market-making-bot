@@ -12,20 +12,24 @@ const MAX_INT =
 
 /**
  *
- * @param privateKey Current Wallet private key
+ * @param wallet: {ADDRESS: user address, PRIVATE_KEY:  user private key} Current Wallet private key
  * @param tokenToApprove Token to approve address
  * @param nonce Nonce of the incoming transaction
  */
 export const approve = async (
-  privateKey: string,
-  tokenToApprove: string,
-  nonce: number
+  wallet: { ADDRESS: string; PRIVATE_KEY: string },
+  tokenToApprove: string
 ) => {
-  const account = new ethers.Wallet(privateKey, bscProvider.provider).connect(
+  const account = new ethers.Wallet(
+    wallet.PRIVATE_KEY,
     bscProvider.provider
-  );
+  ).connect(bscProvider.provider);
 
   try {
+    const nonce = await bscProvider.provider.getTransactionCount(
+      wallet.ADDRESS,
+      "pending"
+    );
     let contract = new ethers.Contract(tokenToApprove, approveABI, account);
     const tx = await contract.approve(config.BSC.PANCAKE_V2_ROUTE, MAX_INT, {
       nonce,
@@ -36,7 +40,9 @@ export const approve = async (
     console.log("\n\n\n ************** APPROVE ***************");
     console.log("Transaction hash: ", tx.hash);
     console.log("*********************************************");
+    return { success: true, data: `${tx.hash}` };
   } catch (error: any) {
     console.log(`Approving Error: ${error.message}`);
+    return { success: false, data: `${error}` };
   }
 };

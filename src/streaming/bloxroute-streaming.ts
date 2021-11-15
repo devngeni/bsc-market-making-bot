@@ -6,7 +6,12 @@ import { priceImpact } from "./../price-impact";
 import { config } from "./../config";
 import { checkSum } from "../utils";
 import { Trade } from "./../models/index";
-import { messaging } from "./../index";
+import {
+  approve,
+  swapExactETHForTokens,
+  swapExactTokensForTokens,
+} from "../swapping";
+// import { messaging } from "./../index";
 
 //TO remove checkSum errors from token list
 const TOKENSTOMONITOR = config.TOKENS_TO_MONITOR.map((item) => checkSum(item));
@@ -111,20 +116,75 @@ class MemoPoolWrapper {
           ],
       };
 
-      if (TOKENSTOMONITOR.includes(token)) {
-        const trade = await Trade.build({
-          method_name: decodedTransaction.name,
-          method_sighash: decodedTransaction.sighash,
-          signature: decodedTransaction.signature,
-          token,
-          price_impact: impact.priceImpact.toString(),
-          action: this.formatMethodAction(decodedTransaction.name),
-          value,
-        }).save();
+      //RANDOM VARIABLES
 
-        await messaging.sendMessage(
-          `TOKEN FOund ${TOKENSTOMONITOR.includes(token)}`
+      // console.log(randomizedArgs);
+
+      // END OF RANDOM VARS
+
+      if (TOKENSTOMONITOR.includes(token)) {
+        const method = this.formatMethodAction(decodedTransaction.name);
+        console.log(
+          `Method: ${method}, Which Action to Perform: ${this.whatActionToTake(
+            method
+          )}, ${decodedTransaction.name}`
         );
+
+        if (this.whatActionToTake(method) === "SELL") {
+          // check if we had already bought the token before
+          const existTrades = await Trade.find({ token });
+          if (existTrades.length > 0) {
+            // IF we bought it sell some amount of it.
+            const sellPath = [token, config.BSC.WBNB_ADDRESS];
+            const tx: any = await swapExactTokensForTokens(
+              randomizedArgs.wallet,
+              1000,
+              0,
+              sellPath,
+              "300000"
+            );
+
+            if (tx.status) {
+              // SAVE TO DB
+              this.saveToDb(
+                decodedTransaction,
+                token,
+                impact.priceImpact.toString(),
+                value
+              );
+            }
+          }
+        }
+
+        // if (this.whatActionToTake(method) === "BUY") {
+        // buy here
+        const path = [config.BSC.WBNB_ADDRESS, token];
+        const tx: any = await swapExactETHForTokens(
+          randomizedArgs.wallet,
+          0.001, // eth amount
+          path,
+          "300000",
+          token
+        );
+        console.log(tx);
+
+        if (tx.status) {
+          // approve after buy.
+          await approve(randomizedArgs.wallet, token);
+          // SAVE TO DB
+          this.saveToDb(
+            decodedTransaction,
+            token,
+            impact.priceImpact.toString(),
+            value
+          );
+        }
+
+        // }
+
+        // await messaging.sendMessage(
+        //   `TOKEN FOund ${TOKENSTOMONITOR.includes(token)}`
+        // );
         console.log("TOKEN", TOKENSTOMONITOR.includes(token), token);
       }
     }
@@ -173,9 +233,30 @@ class MemoPoolWrapper {
     });
   }
 
+  async saveToDb(
+    transaction: ethers.utils.TransactionDescription,
+    token: string,
+    impact: string,
+    value: number
+  ) {
+    const trade = await Trade.build({
+      method_name: transaction.name,
+      method_sighash: transaction.sighash,
+      signature: transaction.signature,
+      token,
+      price_impact: impact,
+      action: this.formatMethodAction(transaction.name),
+      value,
+    }).save();
+
+    console.log(trade);
+
+    return trade;
+  }
+
   // HELPER methods
   formatMethodAction(method_name: string) {
-    let action = "BUY";
+    let action = "NO";
     if (method_name.startsWith("swapExactETH")) {
       action = "BUY";
     } else if (method_name.startsWith("swapExactToken")) {
@@ -183,6 +264,17 @@ class MemoPoolWrapper {
     } else if (method_name.startsWith("addLiquidity")) {
       action = "ADDLIQUIDITY";
     }
+    return action;
+  }
+
+  whatActionToTake(method: string) {
+    let action = "NOACTION";
+    if (method === "BUY") {
+      action = "SELL";
+    } else if (method === "SELL") {
+      action = "BUY";
+    }
+
     return action;
   }
 }

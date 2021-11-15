@@ -1,5 +1,16 @@
-import { BigintIsh, CurrencyAmount } from "@pancakeswap-libs/sdk-v2";
-import { ethers } from "ethers";
+import {
+  BigintIsh,
+  ChainId,
+  CurrencyAmount,
+  Fetcher,
+  Percent,
+  Route,
+  TokenAmount,
+  Trade,
+  TradeType,
+  WETH,
+} from "@pancakeswap-libs/sdk-v2";
+import { BigNumberish, ethers, utils } from "ethers";
 import { bscProvider } from "../provider";
 import { toHex } from "../utils";
 import { config } from "./../config";
@@ -16,12 +27,10 @@ import { config } from "./../config";
  */
 export const swapExactETHForTokens = async (
   wallet: { ADDRESS: string; PRIVATE_KEY: string },
-  amountOutMin: number,
-  ethAmount: number,
+  ethAmount: any,
   path: Array<string>,
-  gasPrice: number,
-  gasLimit: number,
-  nonce: number
+  gasLimit: string,
+  token: string
 ) => {
   console.log(
     "\n\n==================== swapExactETHForTokens ====================="
@@ -43,21 +52,54 @@ export const swapExactETHForTokens = async (
       account
     );
 
-    // Convert Amount to Hexadecimal
-
-    let value = toHex(ethAmount as unknown as CurrencyAmount);
+    // Get nonce
+    const nonce = await bscProvider.provider.getTransactionCount(
+      wallet.ADDRESS,
+      "pending"
+    );
 
     // Transaction Deadline
+    const wbnb = WETH[ChainId.MAINNET];
+    const searchToken = await Fetcher.fetchTokenData(
+      ChainId.MAINNET,
+      token,
+      bscProvider.provider
+    );
+
+    const pair = await Fetcher.fetchPairData(
+      searchToken,
+      wbnb,
+      bscProvider.provider
+    );
+    const route = new Route([pair], wbnb);
+
+    ethAmount = ethAmount * Math.pow(10, 18);
+
+    const slippageTolerance = new Percent("20", "10000");
+    // console.log("Slippage => ", slippageTolerance);
+
+    const trade = new Trade(
+      route,
+      new TokenAmount(wbnb, ethAmount),
+      TradeType.EXACT_INPUT
+    );
+
+    const amountOutMin = toHex(trade.minimumAmountOut(slippageTolerance));
+    // value
+    const amountIn = toHex(trade.inputAmount);
+
     const deadline = Math.floor(Date.now() / 1000) + 60 * 2;
+    console.log(
+      `Amount OutMin: ${amountOutMin},Deadline: ${deadline}, Wallet: ${wallet.ADDRESS}, path: ${path}, `
+    );
     const tx = await swapContract.swapExactETHForTokens(
-      toHex(amountOutMin as unknown as CurrencyAmount),
+      amountOutMin,
       path,
       wallet.ADDRESS,
       deadline,
       {
         nonce: nonce,
-        value,
-        gasPrice,
+        value: amountIn,
         gasLimit,
       }
     );
@@ -80,9 +122,7 @@ export const swapExactETHForTokensSupportingFeeOnTransferTokens = async (
   amountOutMin: number,
   ethAmount: number,
   path: Array<string>,
-  gasPrice: number,
-  gasLimit: number,
-  nonce: number
+  gasLimit: string
 ) => {
   try {
     console.log(
@@ -103,12 +143,12 @@ export const swapExactETHForTokensSupportingFeeOnTransferTokens = async (
       account
     );
 
-    let value = toHex(ethAmount as unknown as CurrencyAmount);
+    let value = utils.hexlify(ethAmount);
 
     const deadline = Math.floor(Date.now() / 1000) + 60 * 2;
-
-    console.log(
-      `\n \n amountOutMin: ${amountOutMin}, \nValue: ${value} \nto: ${wallet.ADDRESS}, \npath: ${path}, \ngasprice: ${gasPrice}, \ngasLimit: ${gasLimit}, \n deadline: ${deadline},`
+    const nonce = await bscProvider.provider.getTransactionCount(
+      wallet.ADDRESS,
+      "pending"
     );
 
     const tx =
@@ -119,8 +159,7 @@ export const swapExactETHForTokensSupportingFeeOnTransferTokens = async (
         deadline,
         {
           nonce: nonce,
-          value,
-          gasPrice,
+          value: value.toString(),
           gasLimit,
         }
       );
@@ -135,7 +174,6 @@ export const swapExactETHForTokensSupportingFeeOnTransferTokens = async (
       "swapExactETHForTokensSupportingFeeOnTransferTokens:  ====> ",
       error
     );
-
     return { success: false, data: `${error}` };
   }
 };
