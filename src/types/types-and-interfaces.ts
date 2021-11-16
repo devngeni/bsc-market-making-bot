@@ -26,6 +26,10 @@ export interface Config {
   MESSAGING: {
     BOT_TOKEN: string;
   };
+  SLIPPAGE: {
+    BUYING: string;
+    SELLING: string;
+  };
 }
 
 export interface NextNotification {

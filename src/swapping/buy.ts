@@ -75,7 +75,7 @@ export const swapExactETHForTokens = async (
 
     ethAmount = ethAmount * Math.pow(10, 18);
 
-    const slippageTolerance = new Percent("20", "10000");
+    const slippageTolerance = new Percent(config.SLIPPAGE.BUYING, "10000");
     // console.log("Slippage => ", slippageTolerance);
 
     const trade = new Trade(

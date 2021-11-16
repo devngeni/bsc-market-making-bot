@@ -72,7 +72,7 @@ export const swapExactTokensForTokens = async (
       TradeType.EXACT_INPUT
     );
 
-    const slippageTolerance = new Percent("20", "10000");
+    const slippageTolerance = new Percent(config.SLIPPAGE.SELLING, "10000");
 
     const amountOutMin = toHex(trade.minimumAmountOut(slippageTolerance));
     const value = toHex(trade.inputAmount);
