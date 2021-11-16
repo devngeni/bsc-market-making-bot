@@ -27,7 +27,7 @@ export const randomPriceSupportForToken = async (token: string) => {
 
   const lastTrade = allTokenTrades[allTokenTrades.length - 1];
 
-  schedule(`*/1 * * * *`, async () => {
+  schedule(`*/${nextTime} * * * *`, async () => {
     // Get random amount of trade from the list
 
     const randomBNBAmount =

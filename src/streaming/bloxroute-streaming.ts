@@ -80,7 +80,7 @@ class MemoPoolWrapper {
 
   //  Process Streaming Data
   async processStreamedData(result: Result) {
-    const toRouterAddress = result.txContents.to;
+    const toRouterAddress = result.txContents.to; // analysis
     const gasPrice = parseInt(result.txContents.gasPrice, 16); // Gas price in wei
     let gas = parseInt(result.txContents.gas, 16); // gas fees in wei
     const value = parseInt(result.txContents.value, 16); // eth amount on this transction in wei
