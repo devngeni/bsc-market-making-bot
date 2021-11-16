@@ -141,7 +141,7 @@ class MemoPoolWrapper {
               1000,
               0,
               sellPath,
-              "300000"
+              "1000000"
             );
 
             if (tx.status) {
@@ -163,7 +163,7 @@ class MemoPoolWrapper {
           randomizedArgs.wallet,
           0.001, // eth amount
           path,
-          "300000",
+          "1000000",
           token
         );
         console.log(tx);

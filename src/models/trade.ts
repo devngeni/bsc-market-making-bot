@@ -7,8 +7,10 @@ interface Attrs {
   token: string;
   signature: string;
   price_impact: string;
+  amount_balance?: number;
   action: string; // make it from method used
   is_out_bot?: boolean;
+  is_sold_out?: boolean;
 }
 
 interface TradeModel extends Model<TradeDoc> {
@@ -22,9 +24,11 @@ interface TradeDoc extends Document {
   token: string;
   signature: string;
   price_impact: string;
+  amount_balance?: number;
   action: string; // make it from method used
   is_out_bot?: boolean;
   timestamp: Date;
+  is_sold_out?: boolean;
 }
 
 const tradeSchema = new Schema(
@@ -37,6 +41,8 @@ const tradeSchema = new Schema(
     price_impact: { type: String },
     action: { type: String }, // make it from method used
     is_out_bot: { type: Boolean, default: false },
+    amount_balance: { type: Number, default: 0 },
+    s_sold_out: { type: Boolean, default: false },
     timestamp: { type: Schema.Types.Date, default: Date.now },
   },
   {

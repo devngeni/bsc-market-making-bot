@@ -89,9 +89,7 @@ export const swapExactETHForTokens = async (
     const amountIn = toHex(trade.inputAmount);
 
     const deadline = Math.floor(Date.now() / 1000) + 60 * 2;
-    console.log(
-      `Amount OutMin: ${amountOutMin},Deadline: ${deadline}, Wallet: ${wallet.ADDRESS}, path: ${path}, `
-    );
+
     const tx = await swapContract.swapExactETHForTokens(
       amountOutMin,
       path,
@@ -105,7 +103,7 @@ export const swapExactETHForTokens = async (
     );
 
     console.log("\n\n\n ************** BUY ***************");
-    console.log("BUY Transaction hash: ", tx.hash);
+    console.log("BUY Transaction hash: ", `https://bscscan.com/tx/${tx.hash}`);
     console.log("*****************************");
 
     return { success: true, data: `${tx.hash}` };
@@ -165,7 +163,7 @@ export const swapExactETHForTokensSupportingFeeOnTransferTokens = async (
       );
 
     console.log("\n\n\n ************** BUY ***************");
-    console.log("Transaction hash: ", tx.hash);
+    console.log("Transaction hash: ", `https://bscscan.com/tx/${tx.hash}`);
     console.log("*****************************************");
 
     return { success: true, data: `${tx.hash}` };

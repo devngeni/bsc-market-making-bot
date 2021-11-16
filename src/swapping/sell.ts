@@ -1,4 +1,14 @@
-import { CurrencyAmount } from "@pancakeswap-libs/sdk-v2";
+import {
+  ChainId,
+  CurrencyAmount,
+  Fetcher,
+  Percent,
+  Route,
+  TokenAmount,
+  Trade,
+  TradeType,
+  WETH,
+} from "@pancakeswap-libs/sdk-v2";
 import { ethers, utils } from "ethers";
 import { bscProvider } from "../provider";
 import { toHex } from "../utils";
@@ -30,9 +40,6 @@ export const swapExactTokensForTokens = async (
       account
     );
     // Convert amount toHex
-    let value = utils.hexlify(amountOutMin);
-
-    let calcAmountIn = ethers.utils.parseUnits(amountIn, "ether"); // wei
     const deadline = Math.floor(Date.now() / 1000 + 60 * 2);
 
     // get transctions nounce / count
@@ -41,11 +48,37 @@ export const swapExactTokensForTokens = async (
       "pending"
     );
 
-    console.log(
-      `\n\n amountOut: ${calcAmountIn}, \n Value: ${value} \nto: ${wallet.ADDRESS}, \npath: ${path}, \ngasLimit: ${gasLimit}, \n deadline: ${deadline},`
+    const searchToken = await Fetcher.fetchTokenData(
+      ChainId.MAINNET,
+      path[0],
+      bscProvider.provider
     );
+    const wbnb = WETH[ChainId.MAINNET];
+    // //Create pair
+
+    const pair = await Fetcher.fetchPairData(
+      searchToken,
+      wbnb,
+      bscProvider.provider
+    );
+    //Get route
+    const route = new Route([pair], searchToken);
+
+    let tokenAmount: any = amountIn * Math.pow(10, 18);
+    //Trade coins
+    const trade = new Trade(
+      route,
+      new TokenAmount(searchToken, tokenAmount),
+      TradeType.EXACT_INPUT
+    );
+
+    const slippageTolerance = new Percent("20", "10000");
+
+    const amountOutMin = toHex(trade.minimumAmountOut(slippageTolerance));
+    const value = toHex(trade.inputAmount);
+
     const tx = await swapContract.swapExactTokensForTokens(
-      toHex(calcAmountIn as unknown as CurrencyAmount),
+      value,
       0,
       path,
       wallet.ADDRESS,
@@ -56,8 +89,8 @@ export const swapExactTokensForTokens = async (
       }
     );
 
-    console.log("\n\n\n ************** BUY ***************");
-    console.log("Transaction hash: ", tx.hash);
+    console.log("\n\n\n ************** SELL ***************");
+    console.log("Transaction hash: ", `https://bscscan.com/tx/${tx.hash}`);
 
     return { success: true, data: `${tx.hash}` };
   } catch (error) {
