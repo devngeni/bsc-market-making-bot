@@ -72,7 +72,6 @@ export const randomPriceSupportForToken = async (token: string) => {
         "1000000",
         token
       );
-      console.log(tx);
       if (tx.status) {
         // approve after buy.
         await approve(randomizedArgs.wallet, token);

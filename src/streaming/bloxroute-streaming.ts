@@ -116,16 +116,11 @@ class MemoPoolWrapper {
           ],
       };
 
-      //RANDOM VARIABLES
-
-      // console.log(randomizedArgs);
-
-      // END OF RANDOM VARS
-
+      // RANDOM BUYS
       if (TOKENSTOMONITOR.includes(token)) {
         const method = this.formatMethodAction(decodedTransaction.name);
         console.log(
-          `Method: ${method}, Which Action to Perform: ${this.whatActionToTake(
+          `Method: ${method}, Action to Perform?: ${this.whatActionToTake(
             method
           )}, ${decodedTransaction.name}`
         );
@@ -156,31 +151,30 @@ class MemoPoolWrapper {
           }
         }
 
-        // if (this.whatActionToTake(method) === "BUY") {
-        // buy here
-        const path = [config.BSC.WBNB_ADDRESS, token];
-        const tx: any = await swapExactETHForTokens(
-          randomizedArgs.wallet,
-          0.001, // eth amount
-          path,
-          "1000000",
-          token
-        );
-        console.log(tx);
-
-        if (tx.status) {
-          // approve after buy.
-          await approve(randomizedArgs.wallet, token);
-          // SAVE TO DB
-          this.saveToDb(
-            decodedTransaction,
-            token,
-            impact.priceImpact.toString(),
-            value
+        if (this.whatActionToTake(method) === "BUY") {
+          // buy here
+          const path = [config.BSC.WBNB_ADDRESS, token];
+          const tx: any = await swapExactETHForTokens(
+            randomizedArgs.wallet,
+            0.001, // eth amount
+            path,
+            "1000000",
+            token
           );
-        }
+          console.log(tx);
 
-        // }
+          if (tx.status) {
+            // approve
+            await approve(randomizedArgs.wallet, token);
+            // SAVE TO DB
+            this.saveToDb(
+              decodedTransaction,
+              token,
+              impact.priceImpact.toString(),
+              value
+            );
+          }
+        }
 
         // await messaging.sendMessage(
         //   `TOKEN FOund ${TOKENSTOMONITOR.includes(token)}`
