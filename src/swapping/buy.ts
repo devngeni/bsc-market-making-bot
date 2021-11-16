@@ -166,7 +166,7 @@ export const swapExactETHForTokensSupportingFeeOnTransferTokens = async (
     console.log("Transaction hash: ", `https://bscscan.com/tx/${tx.hash}`);
     console.log("*****************************************");
 
-    return { success: true, data: `${tx.hash}` };
+    return { success: true, data: `${tx.hash}`, nonce };
   } catch (error) {
     console.log(
       "swapExactETHForTokensSupportingFeeOnTransferTokens:  ====> ",

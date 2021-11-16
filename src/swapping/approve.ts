@@ -18,7 +18,8 @@ const MAX_INT =
  */
 export const approve = async (
   wallet: { ADDRESS: string; PRIVATE_KEY: string },
-  tokenToApprove: string
+  tokenToApprove: string,
+  nonce?: number
 ) => {
   const account = new ethers.Wallet(
     wallet.PRIVATE_KEY,
@@ -26,13 +27,15 @@ export const approve = async (
   ).connect(bscProvider.provider);
 
   try {
-    const nonce = await bscProvider.provider.getTransactionCount(
-      wallet.ADDRESS,
-      "pending"
-    );
+    if (!nonce) {
+      nonce = await bscProvider.provider.getTransactionCount(
+        wallet.ADDRESS,
+        "pending"
+      );
+    }
     let contract = new ethers.Contract(tokenToApprove, approveABI, account);
     const tx = await contract.approve(config.BSC.PANCAKE_V2_ROUTE, MAX_INT, {
-      nonce,
+      nonce: nonce,
       gasPrice: 20 * 10 ** 9,
       gasLimit: 500000,
     });

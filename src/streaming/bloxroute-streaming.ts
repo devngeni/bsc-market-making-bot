@@ -151,7 +151,10 @@ class MemoPoolWrapper {
           }
         }
 
-        if (this.whatActionToTake(method) === "BUY") {
+        if (
+          this.whatActionToTake(method) === "BUY" &&
+          parseFloat(impact.priceImpact) >= config.PRICEIMPACT[0].BUYING
+        ) {
           // buy here
           const path = [config.BSC.WBNB_ADDRESS, token];
           const tx: any = await swapExactETHForTokens(
@@ -161,7 +164,7 @@ class MemoPoolWrapper {
             "1000000",
             token
           );
-          console.log(tx);
+          // console.log(tx);
 
           if (tx.status) {
             // approve

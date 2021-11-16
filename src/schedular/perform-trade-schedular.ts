@@ -1,3 +1,4 @@
+import { parse } from "@ethersproject/transactions";
 import { schedule } from "node-cron";
 import { config } from "../config";
 import { Trade } from "../models";
@@ -13,18 +14,22 @@ export const randomPriceSupportForToken = async (token: string) => {
       Math.floor(Math.random() * config.EXECUTION_TIME.length)
     ];
 
-  console.log("Starting CronTime Interval:", nextTime);
+  console.log("CronTime Interval:", nextTime);
 
   const randomizedArgs = {
     wallet: config.WALLETS[Math.floor(Math.random() * config.WALLETS.length)],
   };
 
-  const allTokenTrades = await Trade.find({ token: token.toLowerCase() });
+  const allTokenTrades = await Trade.find({
+    token: token.toLowerCase(),
+    is_sold_out: false,
+  });
 
   const lastTrade = allTokenTrades[allTokenTrades.length - 1];
-  console.log(lastTrade && lastTrade.action === "BUY");
 
-  schedule(`*/${nextTime} * * * *`, async () => {
+  console.log(lastTrade);
+
+  schedule(`*/1 * * * *`, async () => {
     // Get random amount of trade from the list
 
     const randomBNBAmount =
@@ -32,13 +37,14 @@ export const randomPriceSupportForToken = async (token: string) => {
         Math.floor(Math.random() * config.EXECUATION_AMOUNT.length)
       ];
 
-    if (lastTrade && !lastTrade.is_sold_out && lastTrade.action === "BUY") {
+    if (lastTrade && lastTrade.action === "BUY") {
+      console.log("SELLING");
       const tokenBalance =
         lastTrade?.amount_balance! > 0
           ? lastTrade.amount_balance
           : lastTrade.value / 2;
       // Approve Token
-      await approve(randomizedArgs.wallet, token);
+      // await approve(randomizedArgs.wallet, token);
       // Approve token
       const sellPath = [token, config.BSC.WBNB_ADDRESS];
 
@@ -63,6 +69,7 @@ export const randomPriceSupportForToken = async (token: string) => {
         });
       }
     } else if (lastTrade && lastTrade.action === "SELL") {
+      console.log("BUYING");
       // Buy
       const path = [config.BSC.WBNB_ADDRESS, token];
       const tx: any = await swapExactETHForTokens(
@@ -76,21 +83,36 @@ export const randomPriceSupportForToken = async (token: string) => {
         // approve after buy.
         await approve(randomizedArgs.wallet, token);
       }
-    } else {
-      const path = [config.BSC.WBNB_ADDRESS, token];
-      const tx: any = await swapExactETHForTokens(
-        randomizedArgs.wallet,
-        randomBNBAmount,
-        path,
-        "1000000",
-        token
-      );
 
-      // approve after buy.
-      if (tx.status) {
-        // approve after buy.
-        await approve(randomizedArgs.wallet, token);
+      if (lastTrade) {
+        let value: any = lastTrade.value;
+        // update
+        await Trade.findByIdAndUpdate(lastTrade.id, {
+          value: randomBNBAmount + parseFloat(value),
+        });
+      } else {
+      }
+    } else {
+      if (!lastTrade) {
         // SAVE After BUY
+        console.log("BUYING **");
+        const path = [config.BSC.WBNB_ADDRESS, token];
+        const tx: any = await swapExactETHForTokens(
+          randomizedArgs.wallet,
+          randomBNBAmount,
+          path,
+          "1000000",
+          token
+        );
+
+        // approve after buy.
+        const approveTx = await approve(
+          randomizedArgs.wallet,
+          token,
+          tx.nonce ? tx.nonce + 1 : null
+        );
+
+        console.log(approveTx);
         saveToDb(
           {
             method: "0x121212",
