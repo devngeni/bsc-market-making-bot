@@ -6,6 +6,7 @@
  * ****PLEASE DON'T CHANGE THIS IF YOU DON'T KNOW WHAT YOU ARE DOING****
  * *******************************
  */
+
 export interface Config {
   WALLETS: Array<{ PRIVATE_KEY: string; ADDRESS: string }>;
   PRICEIMPACT: [{ SELLING: number; BUYING: number }];
@@ -30,6 +31,7 @@ export interface Config {
     BUYING: string;
     SELLING: string;
   };
+  IS_BOT_ON: boolean;
 }
 
 export interface NextNotification {

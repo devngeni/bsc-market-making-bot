@@ -11,11 +11,16 @@ const start = async () => {
   //DB configurations
 
   try {
-    await mongoose.connect(config.DB.MONGO_URL);
-    console.log("Successfully connected to DB:!!");
-
-    // support random trades
-    randomPriceSupportForToken(checkSum(config.TOKENS_TO_MONITOR[0]));
+    if (config.IS_BOT_ON) {
+      await mongoose.connect(config.DB.MONGO_URL);
+      console.log("Successfully connected to DB:!!");
+      // support random trades
+      randomPriceSupportForToken(checkSum(config.TOKENS_TO_MONITOR[0]));
+    } else {
+      console.log(
+        "The bot if off, please turn it on by editing IS_BOT_ON: in your prod.ts file"
+      );
+    }
 
     // connect and start streaming data
     // await memoPoolWrapper.connect(config.BLOXROUTE.ENDPOINT);
