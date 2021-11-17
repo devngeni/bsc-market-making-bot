@@ -13,6 +13,8 @@ import { ethers, utils } from "ethers";
 import { bscProvider } from "../provider";
 import { toHex } from "../utils";
 import { config } from "./../config";
+import { getAllowance } from "./allowance";
+import { approve, MAX_INT } from "./approve";
 
 export const swapExactTokensForTokens = async (
   wallet: { ADDRESS: string; PRIVATE_KEY: string },
@@ -43,7 +45,7 @@ export const swapExactTokensForTokens = async (
     const deadline = Math.floor(Date.now() / 1000 + 60 * 2);
 
     // get transctions nounce / count
-    const nonce = await bscProvider.provider.getTransactionCount(
+    let nonce = await bscProvider.provider.getTransactionCount(
       wallet.ADDRESS,
       "pending"
     );
@@ -76,6 +78,22 @@ export const swapExactTokensForTokens = async (
 
     const amountOutMin = toHex(trade.minimumAmountOut(slippageTolerance));
     const value = toHex(trade.inputAmount);
+
+    /**
+     * Check if the token has enough allowance else approve
+     * and increment nonce
+     */
+
+    const allowanceAmount = await getAllowance(wallet, path[0]);
+
+    const allowance = parseInt(allowanceAmount._hex, 16);
+
+    if (allowance < parseInt(MAX_INT)) {
+      await approve(wallet, path[0]);
+      nonce = nonce + 1;
+    }
+
+    /**End of Approve */
 
     const tx = await swapContract.swapExactTokensForTokens(
       value,

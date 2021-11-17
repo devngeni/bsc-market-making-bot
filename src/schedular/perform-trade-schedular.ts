@@ -1,3 +1,4 @@
+import { BigNumber } from "@ethersproject/bignumber";
 import { parse } from "@ethersproject/transactions";
 import { schedule } from "node-cron";
 import { config } from "../config";
@@ -6,6 +7,7 @@ import {
   swapExactETHForTokens,
   approve,
   swapExactTokensForTokens,
+  getAllowance,
 } from "../swapping";
 
 export const randomPriceSupportForToken = async (token: string) => {
@@ -26,6 +28,9 @@ export const randomPriceSupportForToken = async (token: string) => {
   });
 
   const lastTrade = allTokenTrades[allTokenTrades.length - 1];
+  const allowanceAmount = await getAllowance(randomizedArgs.wallet, token);
+
+  console.log(parseInt(allowanceAmount._hex, 16));
 
   schedule(`*/${nextTime} * * * *`, async () => {
     // Get random amount of trade from the list
@@ -41,9 +46,7 @@ export const randomPriceSupportForToken = async (token: string) => {
         lastTrade?.amount_balance! > 0
           ? lastTrade.amount_balance
           : lastTrade.value / 2;
-      // Approve Token
-      // await approve(randomizedArgs.wallet, token);
-      // Approve token
+
       const sellPath = [token, config.BSC.WBNB_ADDRESS];
 
       await swapExactTokensForTokens(
@@ -70,17 +73,15 @@ export const randomPriceSupportForToken = async (token: string) => {
       console.log("BUYING");
       // Buy
       const path = [config.BSC.WBNB_ADDRESS, token];
-      const tx: any = await swapExactETHForTokens(
+
+      // selling
+      await swapExactETHForTokens(
         randomizedArgs.wallet,
         randomBNBAmount,
         path,
         "1000000",
         token
       );
-      if (tx.status) {
-        // approve after buy.
-        await approve(randomizedArgs.wallet, token);
-      }
 
       if (lastTrade) {
         let value: any = lastTrade.value;
@@ -103,14 +104,6 @@ export const randomPriceSupportForToken = async (token: string) => {
           token
         );
 
-        // approve after buy.
-        const approveTx = await approve(
-          randomizedArgs.wallet,
-          token,
-          tx.nonce ? tx.nonce + 1 : null
-        );
-
-        console.log(approveTx);
         saveToDb(
           {
             method: "0x121212",

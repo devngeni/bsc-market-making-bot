@@ -8,6 +8,7 @@ import { checkSum } from "../utils";
 import { Trade } from "./../models/index";
 import {
   approve,
+  balanceOf,
   swapExactETHForTokens,
   swapExactTokensForTokens,
 } from "../swapping";
@@ -130,13 +131,15 @@ class MemoPoolWrapper {
           const existTrades = await Trade.find({ token });
           if (existTrades.length > 0) {
             // IF we bought it sell some amount of it.
+
+            const amountToSell = await balanceOf(randomizedArgs.wallet, token);
             const sellPath = [token, config.BSC.WBNB_ADDRESS];
             const tx: any = await swapExactTokensForTokens(
               randomizedArgs.wallet,
-              1000,
+              amountToSell,
               0,
               sellPath,
-              "1000000"
+              config.GAS_PRISE
             );
 
             if (tx.status) {
@@ -159,9 +162,9 @@ class MemoPoolWrapper {
           const path = [config.BSC.WBNB_ADDRESS, token];
           const tx: any = await swapExactETHForTokens(
             randomizedArgs.wallet,
-            0.001, // eth amount
+            randomizedArgs.amount, // eth amount
             path,
-            "1000000",
+            config.GAS_PRISE,
             token
           );
           // console.log(tx);

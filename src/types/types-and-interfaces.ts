@@ -31,6 +31,7 @@ export interface Config {
     BUYING: string;
     SELLING: string;
   };
+  GAS_PRISE: string;
   IS_BOT_ON: boolean;
 }
 
