@@ -1,22 +1,16 @@
-import { BigNumber } from "@ethersproject/bignumber";
-import { parse } from "@ethersproject/transactions";
 import { schedule } from "node-cron";
 import { config } from "../config";
 import { Trade } from "../models";
-import {
-  swapExactETHForTokens,
-  approve,
-  swapExactTokensForTokens,
-  getAllowance,
-} from "../swapping";
+import { swapExactETHForTokens, swapExactTokensForTokens } from "../swapping";
 
 export const randomPriceSupportForToken = async (token: string) => {
+  // SETTING UP SCHEDULAR START TRANSACTION  TIME
   let nextTime =
     config.EXECUTION_TIME[
       Math.floor(Math.random() * config.EXECUTION_TIME.length)
     ];
 
-  console.log("CronTime Interval:", nextTime);
+  console.log("RANDOM SCHEDULAR START TIME:", nextTime);
 
   const randomizedArgs = {
     wallet: config.WALLETS[Math.floor(Math.random() * config.WALLETS.length)],
@@ -28,9 +22,6 @@ export const randomPriceSupportForToken = async (token: string) => {
   });
 
   const lastTrade = allTokenTrades[allTokenTrades.length - 1];
-  const allowanceAmount = await getAllowance(randomizedArgs.wallet, token);
-
-  console.log(parseInt(allowanceAmount._hex, 16));
 
   schedule(`*/${nextTime} * * * *`, async () => {
     // Get random amount of trade from the list
@@ -54,7 +45,7 @@ export const randomPriceSupportForToken = async (token: string) => {
         tokenBalance,
         0,
         sellPath,
-        "1000000"
+        config.GAS_PRISE
       );
 
       // CHECK the token amount balance & update the token accordingly
@@ -79,7 +70,7 @@ export const randomPriceSupportForToken = async (token: string) => {
         randomizedArgs.wallet,
         randomBNBAmount,
         path,
-        "1000000",
+        config.GAS_PRISE,
         token
       );
 
@@ -96,11 +87,11 @@ export const randomPriceSupportForToken = async (token: string) => {
         // SAVE After BUY
         console.log("BUYING **");
         const path = [config.BSC.WBNB_ADDRESS, token];
-        const tx: any = await swapExactETHForTokens(
+        await swapExactETHForTokens(
           randomizedArgs.wallet,
           randomBNBAmount,
           path,
-          "1000000",
+          config.GAS_PRISE,
           token
         );
 
@@ -116,11 +107,12 @@ export const randomPriceSupportForToken = async (token: string) => {
         );
       }
 
-      // set next random cron time
+      // SETTING UP NEXT TRANSACTION  TIME
       nextTime =
         config.EXECUTION_TIME[
           Math.floor(Math.random() * config.EXECUTION_TIME.length)
         ];
+      console.log("SCHEDULAR START TIME:", nextTime);
     }
   });
 };

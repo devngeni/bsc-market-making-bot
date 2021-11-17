@@ -7,7 +7,6 @@ import { config } from "./../config";
 import { checkSum } from "../utils";
 import { Trade } from "./../models/index";
 import {
-  approve,
   balanceOf,
   swapExactETHForTokens,
   swapExactTokensForTokens,
@@ -170,9 +169,6 @@ class MemoPoolWrapper {
           // console.log(tx);
 
           if (tx.status) {
-            // approve
-            await approve(randomizedArgs.wallet, token);
-            // SAVE TO DB
             this.saveToDb(
               decodedTransaction,
               token,

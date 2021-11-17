@@ -89,7 +89,9 @@ export const swapExactTokensForTokens = async (
     const allowance = parseInt(allowanceAmount._hex, 16);
 
     if (allowance < parseInt(MAX_INT)) {
-      await approve(wallet, path[0]);
+      await approve(wallet, path[0], nonce);
+
+      // increment the nonce
       nonce = nonce + 1;
     }
 

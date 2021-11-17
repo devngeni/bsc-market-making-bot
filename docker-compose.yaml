@@ -1,18 +1,17 @@
 version: '3'
 services:
-  node:
+  mongodb:
     restart: always
     build: .
-    environment:
-      - MONGO_URI=mongodb://localhost:27017/bsc-market
     ports:
       - 4000:4000
     volumes:
       - ./:/code
   mongo:
     image: mongo
+    command: mongod --quiet --logpath /dev/null
     ports:
-      - 1337:27017
+      - 27018:27017
     volumes:
       - mongodb:/data/db
 volumes:
