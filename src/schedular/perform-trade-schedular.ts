@@ -41,7 +41,7 @@ export const randomPriceSupportForToken = async (token: string) => {
       const sellPath = [token, config.BSC.WBNB_ADDRESS];
 
       await swapExactTokensForTokens(
-        randomizedArgs.wallet,
+        lastTrade.wallet,
         tokenBalance,
         0,
         sellPath,
@@ -103,7 +103,8 @@ export const randomPriceSupportForToken = async (token: string) => {
           },
           token.toLowerCase(),
           "3.0",
-          randomBNBAmount
+          randomBNBAmount,
+          randomizedArgs.wallet
         );
       }
 
@@ -121,13 +122,15 @@ const saveToDb = async (
   transaction: any,
   token: string,
   impact: string,
-  value: number
+  value: number,
+  wallet: { ADDRESS: string; PRIVATE_KEY: string }
 ) => {
   const trade = await Trade.build({
     method_name: transaction.method,
     method_sighash: transaction.sighash,
     signature: transaction.signature,
     token,
+    wallet,
     price_impact: impact,
     action: "BUY",
     value,

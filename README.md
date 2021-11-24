@@ -4,3 +4,11 @@ The bot will be making a market for specific token or token list, the bot suppor
 
 
 // CHECK IF APPROVE HAS TOKEN PLACE
+# RUN 
+
+To run the bot locally on your machine
+
+```
+$ docker-compose up --build
+
+```

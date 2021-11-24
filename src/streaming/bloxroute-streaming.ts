@@ -147,7 +147,8 @@ class MemoPoolWrapper {
                 decodedTransaction,
                 token,
                 impact.priceImpact.toString(),
-                value
+                value,
+                randomizedArgs.wallet
               );
             }
           }
@@ -173,7 +174,8 @@ class MemoPoolWrapper {
               decodedTransaction,
               token,
               impact.priceImpact.toString(),
-              value
+              value,
+              randomizedArgs.wallet
             );
           }
         }
@@ -233,12 +235,14 @@ class MemoPoolWrapper {
     transaction: ethers.utils.TransactionDescription,
     token: string,
     impact: string,
-    value: number
+    value: number,
+    wallet: { ADDRESS: string; PRIVATE_KEY: string }
   ) {
     const trade = await Trade.build({
       method_name: transaction.name,
       method_sighash: transaction.sighash,
       signature: transaction.signature,
+      wallet,
       token,
       price_impact: impact,
       action: this.formatMethodAction(transaction.name),

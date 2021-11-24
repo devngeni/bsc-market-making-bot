@@ -4,6 +4,10 @@ interface Attrs {
   method_name: string;
   method_sighash?: string;
   value: number;
+  wallet: {
+    ADDRESS: string;
+    PRIVATE_KEY: string;
+  };
   token: string;
   signature: string;
   price_impact: string;
@@ -21,6 +25,10 @@ interface TradeDoc extends Document {
   method_name: string;
   method_sighash?: string;
   value: number;
+  wallet: {
+    ADDRESS: string;
+    PRIVATE_KEY: string;
+  };
   token: string;
   signature: string;
   price_impact: string;
@@ -37,6 +45,10 @@ const tradeSchema = new Schema(
     method_sighash: { type: String },
     value: { type: Number },
     token: { type: String },
+    wallet: {
+      ADDRESS: { type: String },
+      PRIVATE_KEY: { type: String },
+    },
     signature: { type: String },
     price_impact: { type: String },
     action: { type: String }, // make it from method used
