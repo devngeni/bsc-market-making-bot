@@ -25,6 +25,18 @@ export const checkSum = (address: string) => {
  * @param amount Amount in Gwei
  * @returns amount in eth
  */
-const gweiToEth = (amount: number) => {
+export const gweiToEth = (amount: number) => {
   return amount / Math.pow(10, 18);
+};
+
+/** Endecrypt */
+
+export const encrypt = async (value: string) => {
+  let buffer = Buffer.from(value, "utf8");
+  return buffer.toString("base64");
+};
+
+export const decrypt = async (value: string) => {
+  let buffer = Buffer.from(value, "base64");
+  return buffer.toString("utf8");
 };

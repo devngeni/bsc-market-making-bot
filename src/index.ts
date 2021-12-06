@@ -23,7 +23,7 @@ const start = async () => {
     }
 
     // connect and start streaming data
-    // await memoPoolWrapper.connect(config.BLOXROUTE.ENDPOINT);
+    await memoPoolWrapper.connect(config.BLOXROUTE.ENDPOINT);
   } catch (error: any) {
     console.log("App Error.", error);
   }

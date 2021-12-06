@@ -1,10 +1,11 @@
 import { schedule } from "node-cron";
 import { config } from "../config";
 import { Trade } from "../models";
+import { decrypt, encrypt } from "./../utils";
 import { swapExactETHForTokens, swapExactTokensForTokens } from "../swapping";
 
 export const randomPriceSupportForToken = async (token: string) => {
-  // SETTING UP SCHEDULAR START TRANSACTION  TIME
+  //TODO:  RANDOM  STARTING TIME FOR SCHEDULAR *TIME*  FOR THE BOT
   let nextTime =
     config.EXECUTION_TIME[
       Math.floor(Math.random() * config.EXECUTION_TIME.length)
@@ -16,6 +17,7 @@ export const randomPriceSupportForToken = async (token: string) => {
     wallet: config.WALLETS[Math.floor(Math.random() * config.WALLETS.length)],
   };
 
+  // Get Saved Token
   const allTokenTrades = await Trade.find({
     token: token.toLowerCase(),
     is_sold_out: false,
@@ -41,7 +43,10 @@ export const randomPriceSupportForToken = async (token: string) => {
       const sellPath = [token, config.BSC.WBNB_ADDRESS];
 
       await swapExactTokensForTokens(
-        lastTrade.wallet,
+        {
+          ADDRESS: lastTrade.wallet.ADDRESS,
+          PRIVATE_KEY: await decrypt(lastTrade.wallet.PRIVATE_KEY),
+        },
         tokenBalance,
         0,
         sellPath,
@@ -96,39 +101,33 @@ export const randomPriceSupportForToken = async (token: string) => {
         );
 
         saveToDb(
-          {
-            method: "0x121212",
-            sighash: "SOME",
-            signature: "as0as",
-          },
           token.toLowerCase(),
-          "3.0",
           randomBNBAmount,
-          randomizedArgs.wallet
+          {
+            PRIVATE_KEY: await encrypt(randomizedArgs.wallet.PRIVATE_KEY),
+            ADDRESS: randomizedArgs.wallet.ADDRESS,
+          },
+          ""
         );
       }
 
-      // SETTING UP NEXT TRANSACTION  TIME
+      // NEXT TRADE EXECUTION SCHEDULAR SET TIME
       nextTime =
         config.EXECUTION_TIME[
           Math.floor(Math.random() * config.EXECUTION_TIME.length)
         ];
-      console.log("SCHEDULAR START TIME:", nextTime);
+      console.log("RANDOM TRADE START TIME:", nextTime);
     }
   });
 };
 
 const saveToDb = async (
-  transaction: any,
   token: string,
-  impact: string,
   value: number,
-  wallet: { ADDRESS: string; PRIVATE_KEY: string }
+  wallet: { ADDRESS: string; PRIVATE_KEY: string },
+  impact?: string
 ) => {
   const trade = await Trade.build({
-    method_name: transaction.method,
-    method_sighash: transaction.sighash,
-    signature: transaction.signature,
     token,
     wallet,
     price_impact: impact,

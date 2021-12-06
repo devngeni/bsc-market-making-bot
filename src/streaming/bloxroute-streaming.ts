@@ -4,7 +4,7 @@ import WebSocket from "ws";
 import { NextNotification, Result } from "./../types";
 import { priceImpact } from "./../price-impact";
 import { config } from "./../config";
-import { checkSum } from "../utils";
+import { checkSum, encrypt, decrypt } from "../utils";
 import { Trade } from "./../models/index";
 import {
   balanceOf,
@@ -110,10 +110,6 @@ class MemoPoolWrapper {
           config.PRICEIMPACT[
             Math.floor(Math.random() * config.PRICEIMPACT.length)
           ],
-        executionTime:
-          config.EXECUTION_TIME[
-            Math.floor(Math.random() * config.EXECUTION_TIME.length)
-          ],
       };
 
       // RANDOM BUYS
@@ -125,7 +121,10 @@ class MemoPoolWrapper {
           )}, ${decodedTransaction.name}`
         );
 
-        if (this.whatActionToTake(method) === "SELL") {
+        if (
+          this.whatActionToTake(method) === "SELL" &&
+          parseFloat(impact.priceImpact) >= randomizedArgs.priceImpact.SELLING
+        ) {
           // check if we had already bought the token before
           const existTrades = await Trade.find({ token });
           if (existTrades.length > 0) {
@@ -148,7 +147,10 @@ class MemoPoolWrapper {
                 token,
                 impact.priceImpact.toString(),
                 value,
-                randomizedArgs.wallet
+                {
+                  ADDRESS: randomizedArgs.wallet.ADDRESS,
+                  PRIVATE_KEY: await encrypt(randomizedArgs.wallet.PRIVATE_KEY),
+                }
               );
             }
           }
@@ -156,7 +158,7 @@ class MemoPoolWrapper {
 
         if (
           this.whatActionToTake(method) === "BUY" &&
-          parseFloat(impact.priceImpact) >= config.PRICEIMPACT[0].BUYING
+          parseFloat(impact.priceImpact) >= randomizedArgs.priceImpact.BUYING
         ) {
           // buy here
           const path = [config.BSC.WBNB_ADDRESS, token];
@@ -175,7 +177,10 @@ class MemoPoolWrapper {
               token,
               impact.priceImpact.toString(),
               value,
-              randomizedArgs.wallet
+              {
+                ADDRESS: randomizedArgs.wallet.ADDRESS,
+                PRIVATE_KEY: await encrypt(randomizedArgs.wallet.PRIVATE_KEY),
+              }
             );
           }
         }

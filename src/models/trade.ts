@@ -1,7 +1,7 @@
 import { Model, model, Schema, Document } from "mongoose";
 
 interface Attrs {
-  method_name: string;
+  method_name?: string;
   method_sighash?: string;
   value: number;
   wallet: {
@@ -9,8 +9,8 @@ interface Attrs {
     PRIVATE_KEY: string;
   };
   token: string;
-  signature: string;
-  price_impact: string;
+  signature?: string;
+  price_impact?: string;
   amount_balance?: number;
   action: string; // make it from method used
   is_out_bot?: boolean;
@@ -22,7 +22,7 @@ interface TradeModel extends Model<TradeDoc> {
 }
 
 interface TradeDoc extends Document {
-  method_name: string;
+  method_name?: string;
   method_sighash?: string;
   value: number;
   wallet: {
@@ -30,8 +30,8 @@ interface TradeDoc extends Document {
     PRIVATE_KEY: string;
   };
   token: string;
-  signature: string;
-  price_impact: string;
+  signature?: string;
+  price_impact?: string;
   amount_balance?: number;
   action: string; // make it from method used
   is_out_bot?: boolean;
@@ -54,7 +54,7 @@ const tradeSchema = new Schema(
     action: { type: String }, // make it from method used
     is_out_bot: { type: Boolean, default: false },
     amount_balance: { type: Number, default: 0 },
-    s_sold_out: { type: Boolean, default: false },
+    is_sold_out: { type: Boolean, default: false },
     timestamp: { type: Schema.Types.Date, default: Date.now },
   },
   {
