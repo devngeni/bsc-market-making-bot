@@ -39,6 +39,15 @@ class PriceImpact {
         pair.reserveOf(token).quotient.toString()
       ).toFixed(2),
       priceImpact: trade.priceImpact.toFixed(2),
+      sell:
+        parseFloat(trade.priceImpact.toFixed(2)) >=
+        config.PRICEIMPACT[0].SELLING
+          ? true
+          : false,
+      buy:
+        parseFloat(trade.priceImpact.toFixed(2)) >= config.PRICEIMPACT[0].BUYING
+          ? true
+          : false,
       value,
       token: ` https://www.dextools.io/app/pancakeswap/pair-explorer/${pair.liquidityToken.address}`,
     };
